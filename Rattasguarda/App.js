@@ -12,6 +12,7 @@ export default class TestApp extends Component {
     this.state = {
         start: 0,
         now: 0,
+        isGoing: false,
         entries: [],
         opts2: [{id: 1, active: false}, {id: 2, active: false}, {id: 3, active: false} ],
         activeChoice: '',
@@ -55,9 +56,13 @@ export default class TestApp extends Component {
   setActive(item) {
       this.setState( {activeChoice: item});
   }
+  startStop = () => {
+
+  };
   start = () => {
       const now = new Date().getTime();
       this.setState( {
+          isGoing: true,
           start: now,
           now,
       });
@@ -67,9 +72,10 @@ export default class TestApp extends Component {
   };
   stop = () => {
         clearInterval(this.timer);
-        this.setState({
-            start: 0,
-            now: 0
+       this.setState({
+            /* start: 0,
+            now: 0 */
+            isGoing: false
         })
     };
   resume = () => {
@@ -104,7 +110,7 @@ export default class TestApp extends Component {
             <View style={{marginTop:32, alignItems:'center'}}>
                 <Timer
                     interval={timer}
-                    style={styles.timer}
+                    style={styles.timeText}
                 />
             <Stopwatch start={this.state.isStopwatchStart}
                 //To start
@@ -122,7 +128,7 @@ export default class TestApp extends Component {
               <Text style={styles.btnText1}>RESET</Text>
             </TouchableHighlight>
           </View>
-            <ABBUTTON title='asdingo' onPress={this.start}/>
+            <ABBUTTON title='asdingo' onPress={ (this.state.isGoing === false) ? this.start : this.stop}/>
           <View>
             <ButtonRow>
               <CButton title={this.state.activeChoice} color='#ffff' background='#4287f5'/>
@@ -144,7 +150,7 @@ function Timer({ interval, style }) {
     const duration = moment.duration(interval);
     const centiseconds = Math.floor(duration.milliseconds() / 10);
     return (
-        <View style={styles.timerContainer}>
+        <View style={styles.timer}>
             <Text style={style}>{pad(duration.minutes())}:</Text>
             <Text style={style}>{pad(duration.seconds())},</Text>
             <Text style={style}>{pad(centiseconds)}</Text>
@@ -248,10 +254,10 @@ const styles = StyleSheet.create({
   },
   timeText: {
       fontSize: 30,
-      marginTop: 20,
       color: '#875154'
   },
   timer: {
+      flexDirection: 'row',
       fontSize: 30,
       marginTop: 20,
       color: '#875154',
