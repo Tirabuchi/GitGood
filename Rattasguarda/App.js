@@ -68,11 +68,12 @@ export default class TestApp extends Component {
             readyToExport: true,
         })
     };
-  addEntry = () => {
+  addEntry = (entry) => {
     //  let newEntryTime = this.state.now - this.state.start - this.state.prev;
    //   let newEntryFormat = "Duration: "+ newEntry.minutes().toString() + "min " + newEntry.seconds().toString() + "sec";
       let entryArr = this.state.entries;
-      entryArr.unshift({id: this.state.activeChoice, startTime: this.state.prev, endTime: this.state.now - this.state.start});
+      entryArr.unshift({id: entry, startTime: this.state.prev, endTime: this.state.now - this.state.start});
+      console.log(entryArr);
       this.setState( ({
           entries: entryArr
       }))
