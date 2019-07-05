@@ -12,6 +12,7 @@ export default class TestApp extends Component {
     this.state = {
         start: 0,
         now: 0,
+        prev: 0,
         isGoing: false,
         entries: [],
         opts2: [{id: 1, active: false}, {id: 2, active: false}, {id: 3, active: false} ],
@@ -31,34 +32,24 @@ export default class TestApp extends Component {
       resetStopwatch: false,
 
     };
-    this.startStopStopWatch = this.startStopStopWatch.bind(this);
-    this.resetStopwatch = this.resetStopwatch.bind(this);
   }
     componentWillUnmount() {
-        clearInterval(this.timer)
+        clearInterval(this.timer);
+       /* this.setState( {
+            isGoing: false,
+            start: 0,
+            now: 0,
+            readyToExport: false,
+        }); */
     }
- /* handleChange = (event) => {
-      console.log(event);
-      this.setState({[event]: true });
-      console.log(this.state.op1);
-  }; */
-  startStopStopWatch() {
-    this.setState({isStopwatchStart: !this.state.isStopwatchStart, resetStopwatch: false});
-    handleTimerComplete();
-  }
-  resetStopwatch() {
-    this.setState({isStopwatchStart: false, resetStopwatch: true});
-  }
-  getFormattedTime(time) {
-    this.currentTime = time;
-    global.currentTime = this.currentTime;
-  }
   setActive(item) {
-      this.setState( {activeChoice: item});
+      if (item === this.state.activeChoice) return;
+      this.setState( {
+          activeChoice: item,
+          prev: this.state.now - this.state.start
+      });
+      this.addEntry(item);
   }
-  startStop = () => {
-
-  };
   start = () => {
       const now = new Date().getTime();
       this.setState( {
@@ -73,11 +64,21 @@ export default class TestApp extends Component {
   stop = () => {
         clearInterval(this.timer);
        this.setState({
-            /* start: 0,
-            now: 0 */
-            isGoing: false
+            isGoing: false,
+            readyToExport: true,
         })
     };
+  addEntry = () => {
+    //  let newEntryTime = this.state.now - this.state.start - this.state.prev;
+   //   let newEntryFormat = "Duration: "+ newEntry.minutes().toString() + "min " + newEntry.seconds().toString() + "sec";
+      let entryArr = this.state.entries;
+      entryArr.unshift({id: this.state.activeChoice, startTime: this.state.prev, endTime: this.state.now - this.state.start});
+      this.setState( ({
+          entries: entryArr
+      }))
+  };
+
+
   resume = () => {
         const now = new Date().getTime();
         this.setState({
@@ -88,9 +89,6 @@ export default class TestApp extends Component {
             this.setState({ now: new Date().getTime()})
         }, 100)
     };
-  getTime2() {
-      return (this.state.now - this.state.start).toLocaleString();
-  }
   render() {
     const {now, start, entries} = this.state;
     const timer = now - start;
@@ -112,21 +110,6 @@ export default class TestApp extends Component {
                     interval={timer}
                     style={styles.timeText}
                 />
-            <Stopwatch start={this.state.isStopwatchStart}
-                //To start
-                       reset={this.state.resetStopwatch}
-                //To reset
-                       options={options}
-                //options for the styling
-                       getTime={this.getFormattedTime} />
-            <TouchableHighlight onPress={this.startStopStopWatch}>
-              <Text style={styles.btnText1}>
-                {!this.state.isStopwatchStart ? "START" : "STOP"}
-              </Text>
-            </TouchableHighlight>
-            <TouchableHighlight onPress={this.resetStopwatch}>
-              <Text style={styles.btnText1}>RESET</Text>
-            </TouchableHighlight>
           </View>
             <ABBUTTON title='asdingo' onPress={ (this.state.isGoing === false) ? this.start : this.stop}/>
           <View>
@@ -138,7 +121,7 @@ export default class TestApp extends Component {
                   {items}
               </ButtonRow>
 
-            <EntryTable entries={[1212412, 1414221]}/>
+            <EntryTable entries={this.state.entries}/>
 
           </View>
         </View>
@@ -148,12 +131,12 @@ export default class TestApp extends Component {
 function Timer({ interval, style }) {
     const pad = (n) => n < 10 ? '0' + n : n;
     const duration = moment.duration(interval);
-    const centiseconds = Math.floor(duration.milliseconds() / 10);
+    const deciseconds = Math.floor(duration.milliseconds() / 100);
     return (
         <View style={styles.timer}>
             <Text style={style}>{pad(duration.minutes())}:</Text>
             <Text style={style}>{pad(duration.seconds())},</Text>
-            <Text style={style}>{pad(centiseconds)}</Text>
+            <Text style={style}>{deciseconds}</Text>
         </View>
     )
 }
@@ -181,20 +164,17 @@ function CButton({ title, color, background, active, bool, action }) {
 
   )
 }
-function TimerTry (time, action) {
-    return (
-        <Text style={styles.timeText} onPress={action}>{time}</Text>
-    )
-}
 function ButtonRow({ children }) {
   return (
       <View style={styles.buttonRow}>{children}</View>)
 }
-function Entry({ number, interval}) {
+function Entry({ name, interval}) {
+      let newEntry = moment.duration(interval);
+      let newEntryFormat = "Duration: "+ newEntry.minutes().toString() + "min " + newEntry.seconds().toString() + "sec";
   return (
       <View >
-        <Text style={styles.entry}>N: {number}</Text>
-        <Text style={styles.entry}>{interval}</Text>
+        <Text style={styles.entry}>N: {name}</Text>
+        <Text style={styles.entry}>{newEntryFormat}</Text>
       </View>
   )
 }
@@ -202,7 +182,7 @@ function EntryTable({entries}) {
   return (
       <ScrollView style={styles.entries}>
         {entries.map((entry, index) => (
-            <Entry number={entries.length - index} key={entries.length - index} interval={entry}/>
+            <Entry name={entry.id} key={index} interval={entry.endTime-entry.startTime}/>
         ))}
       </ScrollView>
   )
@@ -247,7 +227,7 @@ const styles = StyleSheet.create({
   },
   entries: {
     height: 50,
-    marginTop: 300
+   marginLeft: 50,
   },
   active: {
       backgroundColor: '#88909e'
