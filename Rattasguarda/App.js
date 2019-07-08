@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 //import React in our project
-import { StyleSheet,Text,View, TouchableHighlight, ScrollView, TouchableOpacity, Switch, Button } from 'react-native';
+import { StyleSheet,Text,View, TouchableHighlight, ScrollView, TouchableOpacity, Switch, Button, TextInput } from 'react-native';
 //import all the required components
-import { Stopwatch} from 'react-native-stopwatch-timer';
 import moment from 'moment';
 //importing library to use Stopwatch and Timer
 
@@ -15,6 +14,7 @@ export default class TestApp extends Component {
         prev: 0,
         isGoing: false,
         entries: [],
+        inputValue: '',
         opts2: [{id: 1, active: false}, {id: 2, active: false}, {id: 3, active: false} ],
         activeChoice: '',
 
@@ -42,12 +42,17 @@ export default class TestApp extends Component {
             readyToExport: false,
         }); */
     }
-  setActive(item) {
-      if (item === this.state.activeChoice) return;
-      this.setState( {
-          activeChoice: item,
-          prev: this.state.now - this.state.start
+    newInputValue = value => {
+      this.setState({
+          inputValue: value
       });
+    };
+  setActive(item) {
+      if (item === this.state.activeChoice || this.state.isGoing !== true) return;
+      this.setState( (prevState) => ({
+          activeChoice: item,
+          prev: prevState.now - prevState.start
+      }));
       this.addEntry(item);
   }
   start = () => {
@@ -66,6 +71,7 @@ export default class TestApp extends Component {
        this.setState({
             isGoing: false,
             readyToExport: true,
+           // prev: 0,
         })
     };
   addEntry = (entry) => {
@@ -77,6 +83,10 @@ export default class TestApp extends Component {
       this.setState( ({
           entries: entryArr
       }))
+  };
+  exportData = () => {
+      console.log(JSON.stringify(this.state.entries));
+      console.log('ciae');
   };
 
 
@@ -91,7 +101,7 @@ export default class TestApp extends Component {
         }, 100)
     };
   render() {
-    const {now, start, entries} = this.state;
+    const {now, start, entries, inputValue} = this.state;
     const timer = now - start;
     const items = this.state.opts2.map((item) => {
         return (
@@ -106,6 +116,9 @@ export default class TestApp extends Component {
     });
     return (
         <View style={styles.container}>
+            <View>
+            <Input inputValue={inputValue} onChangeText={this.newInputValue}/>
+            </View>
             <View style={{marginTop:32, alignItems:'center'}}>
                 <Timer
                     interval={timer}
@@ -116,7 +129,7 @@ export default class TestApp extends Component {
           <View>
             <ButtonRow>
               <CButton title={this.state.activeChoice} color='#ffff' background='#4287f5'/>
-              <CButton title='op2' color='#ffff' background='#9ac259'/>
+              <CButton title='op2' color='#ffff' background='#9ac259' action={() => this.exportData()}/>
             </ButtonRow>
               <ButtonRow>
                   {items}
@@ -141,6 +154,22 @@ function Timer({ interval, style }) {
         </View>
     )
 }
+const Input = ({inputValue, onChangeText, onDoneAddTitle}) => (
+    <TextInput style={styles.input}
+               value={inputValue}
+               onChangeText={onChangeText}
+               placeholder="Type here to add note."
+               placeholderTextColor={'blue'}
+               multiline={true}
+               autoCapitalize="sentences"
+               underlineColorAndroid="transparent"
+               selectionColor={'white'}
+               maxLength={30}
+               returnKeyType="done"
+               autoCorrect={false}
+               blurOnSubmit={true}
+               onSubmitEditing={onDoneAddTitle}/>
+);
 function ABBUTTON ({title, onPress}) {
     return (
         <TouchableOpacity
@@ -247,7 +276,14 @@ const styles = StyleSheet.create({
       width: 100,
       height: 30,
       backgroundColor: '#875154'
-  }
+  },
+    input: {
+        paddingTop: 10,
+        paddingRight: 15,
+        fontSize: 34,
+        color: 'white',
+        fontWeight: '500'
+    }
 
 
 });
