@@ -1,0 +1,6 @@
+
+<button *ngIf='!isLoggedIn()' (click)="signIn()">sign in</button>
+
+<div *ngIf='isLoggedIn()'>
+<button (click)="checkSheet()">CHeck sheet</button>
+</div>
